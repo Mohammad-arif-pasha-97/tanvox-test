@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import emailjs from '@emailjs/browser';
 import contactbg from '../assets/contactbg.jpg';
 
 const Contact = () => {
@@ -11,39 +12,50 @@ const Contact = () => {
   });
 
   const [formStatus, setFormStatus] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // ✅ UPDATED SUBMIT HANDLER (MAILTO REDIRECTION)
+  // ✅ EMAILJS SUBMIT HANDLER
   const handleSubmit = (e) => {
     e.preventDefault();
+    setLoading(true);
 
-    const subject = encodeURIComponent("Contact Request from Website");
-    const body = encodeURIComponent(
-      `Name: ${formData.name}
-Email: ${formData.email}
-Phone: ${formData.phone}
-Company: ${formData.company}
-
-Message:
-${formData.message}`
-    );
-
-    window.location.href = `mailto:info@tanvox.in?subject=${subject}&body=${body}`;
-
-    setFormStatus("Redirecting to email...");
-
-    setTimeout(() => setFormStatus(""), 3000);
-
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      company: '',
-      message: ''
-    });
+    emailjs
+      .send(
+        'YOUR_SERVICE_ID',   // 🔴 replace
+        'YOUR_TEMPLATE_ID',  // 🔴 replace
+        {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          company: formData.company,
+          message: formData.message
+        },
+        'YOUR_PUBLIC_KEY'    // 🔴 replace
+      )
+      .then(
+        () => {
+          setFormStatus('Message sent successfully!');
+          setFormData({
+            name: '',
+            email: '',
+            phone: '',
+            company: '',
+            message: ''
+          });
+        },
+        (error) => {
+          console.error(error);
+          setFormStatus('Failed to send message. Please try again.');
+        }
+      )
+      .finally(() => {
+        setLoading(false);
+        setTimeout(() => setFormStatus(''), 5000);
+      });
   };
 
   const hyderabadOffice = {
@@ -54,32 +66,11 @@ ${formData.message}`
     email: "info@tanvox.in"
   };
 
-  const faqs = [
-    {
-      question: "What services do you offer?",
-      answer:
-        "Custom software development, mobile apps, web development, cloud solutions, UI/UX design, and DevOps."
-    },
-    {
-      question: "How long does a project take?",
-      answer: "4-6 weeks for simple websites, 3-6 months for complex applications."
-    },
-    {
-      question: "Do you provide ongoing support?",
-      answer: "Yes, we offer maintenance and support packages."
-    },
-    {
-      question: "What is your pricing model?",
-      answer:
-        "Fixed-price, time & materials, and dedicated team models."
-    }
-  ];
-
   return (
     <div className="min-h-screen">
       {/* HERO */}
       <section
-        className="relative min-h-screen flex items-center justify-center"
+        className="min-h-screen flex items-center justify-center"
         style={{
           backgroundImage: `linear-gradient(rgba(185,176,176,0.7), rgba(19,1,66,0.8)), url(${contactbg})`,
           backgroundSize: "cover",
@@ -91,7 +82,7 @@ ${formData.message}`
             <span className="block text-red-900">Get In</span>
             <span className="block text-navy-blue">Touch</span>
           </h1>
-          <p className="text-xl md:text-2xl text-white">
+          <p className="text-xl text-white">
             Ready to start your next project? Contact us today.
           </p>
         </div>
@@ -100,7 +91,7 @@ ${formData.message}`
       {/* CONTACT FORM */}
       <section className="py-20">
         <div className="container mx-auto px-6 max-w-4xl">
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16">
+          <h2 className="text-4xl font-bold text-center mb-16">
             Send Us a <span className="text-navy-blue">Message</span>
           </h2>
 
@@ -160,46 +151,12 @@ ${formData.message}`
 
             <button
               type="submit"
-              className="bg-navy-blue text-white px-8 py-4 rounded-lg hover:bg-blue-800 transition text-lg font-semibold"
+              disabled={loading}
+              className="bg-navy-blue text-white px-8 py-4 rounded-lg hover:bg-blue-800 disabled:opacity-50"
             >
-              Send Message
+              {loading ? 'Sending...' : 'Send Message'}
             </button>
           </form>
-        </div>
-      </section>
-
-      {/* OFFICE */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-6 max-w-6xl grid lg:grid-cols-2 gap-12">
-          <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3806.1814107272626!2d78.3628605!3d17.4510292"
-            className="w-full h-96 rounded-lg shadow-lg"
-            loading="lazy"
-            title="Tanvox Office"
-          />
-
-          <div className="bg-white rounded-lg shadow-lg p-8">
-            <h3 className="text-3xl font-bold text-navy-blue mb-6">
-              {hyderabadOffice.city}
-            </h3>
-            <p>{hyderabadOffice.address}</p>
-            <p className="mt-3">{hyderabadOffice.phone}</p>
-            <p className="mt-3">{hyderabadOffice.email}</p>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="py-20">
-        <div className="container mx-auto px-6 max-w-3xl space-y-6">
-          {faqs.map((faq, i) => (
-            <div key={i} className="border p-6 rounded-lg">
-              <h3 className="text-xl font-bold text-navy-blue">
-                {faq.question}
-              </h3>
-              <p>{faq.answer}</p>
-            </div>
-          ))}
         </div>
       </section>
     </div>
@@ -207,3 +164,4 @@ ${formData.message}`
 };
 
 export default Contact;
+
